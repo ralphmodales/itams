@@ -204,7 +204,6 @@
         $(document).ready(function() {
             console.log('Asset tag handler initialized');
 
-            // Get the asset ID from the URL path
             var pathParts = window.location.pathname.split('/');
             var current_asset_id = pathParts.indexOf('hardware') >= 0 ? pathParts[pathParts.indexOf('hardware') +
                 1] : null;
@@ -213,7 +212,6 @@
                 var company_id = e.params.data.id;
                 console.log('Company changed to:', company_id);
 
-                // Clear fields first
                 $('#asset_tag').val('');
                 $('.input_fields_wrap input[name^="asset_tags"]').val('');
 
@@ -222,7 +220,6 @@
                     return;
                 }
 
-                // Show loading state
                 $('#asset_tag').prop('disabled', true);
 
                 console.log('Fetching asset tag for company:', company_id, 'current asset:',
@@ -239,10 +236,8 @@
                     success: function(data) {
                         console.log('Received response:', data);
                         if (data && data.asset_tag) {
-                            // Update the main asset tag field
                             $('#asset_tag').val(data.asset_tag);
 
-                            // Update any additional asset tag fields
                             $('.input_fields_wrap input[name^="asset_tags"]').each(function(
                                 index) {
                                 var baseNumber = parseInt(data.asset_tag.replace(/\D/g,
@@ -272,7 +267,6 @@
                 });
             });
 
-            // Trigger on page load if company is pre-selected
             var initialCompanyId = $('#company_id').val();
             if (initialCompanyId) {
                 console.log('Initial company detected:', initialCompanyId);
