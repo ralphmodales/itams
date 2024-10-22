@@ -60,6 +60,7 @@ final class CompaniesController extends Controller
 
         $company = new Company;
         $company->name = $request->input('name');
+        $company->prefix = $request->input('prefix');    
 
         $company = $request->handleImages($company);
 

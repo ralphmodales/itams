@@ -24,6 +24,7 @@ final class Company extends SnipeModel
     // Declare the rules for the model validation
     protected $rules = [
         'name' => 'required|min:1|max:255|unique:companies,name',
+        'prefix' => 'nullable|min:1|max:255|unique:companies,prefix'
     ];
 
     protected $presenter = \App\Presenters\CompanyPresenter::class;

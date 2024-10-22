@@ -25,6 +25,10 @@ use App\Http\Controllers\Auth\ResetPasswordController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
+Route::get('/api/assets/tag', [App\Http\Controllers\Api\AssetsController::class, 'getAssetTag'])
+    ->name('api.assets.tag');
+
+
 Route::group(['middleware' => 'auth'], function () {
     /*
     * Companies
