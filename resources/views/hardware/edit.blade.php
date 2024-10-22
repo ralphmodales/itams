@@ -201,7 +201,7 @@
 @section('moar_scripts')
 
     <script nonce="{{ csrf_token() }}">
-        $(document).ready(function() {
+        $(document).ready(function() { // some javascript shit
             console.log('Asset tag handler initialized');
 
             var pathParts = window.location.pathname.split('/');

@@ -786,6 +786,8 @@ class Asset extends Depreciable
      * @since [v4.0]
      * @return string | false
      */
+
+    //incrementor with or without company :DDD
     public static function autoincrement_asset($company_id = null, $current_asset_id = null)
     {
         $settings = Setting::getSettings();

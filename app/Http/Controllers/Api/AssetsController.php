@@ -641,7 +641,8 @@ class AssetsController extends Controller
 
         return response()->json(Helper::formatStandardApiResponse('error', null, $asset->getErrors()), 200);
     }
-
+  
+    // call the incrementor
     public function getNextAssetTag($companyId, Request $request)
     {
     try {
