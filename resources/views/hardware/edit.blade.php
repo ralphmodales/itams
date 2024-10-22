@@ -202,25 +202,76 @@
 
     <script nonce="{{ csrf_token() }}">
         $(document).ready(function() {
-            $('#company_id').change(function() {
-                var company_id = $(this).val();
+            console.log('Asset tag handler initialized');
 
-                if (company_id) {
-                    $.ajax({
-                        url: '{{ route('api.assets.tag') }}',
-                        type: 'GET',
-                        data: {
-                            company_id: company_id
-                        },
-                        success: function(data) {
-                            $('#asset_tag').val(data.asset_tag);
-                        },
-                        error: function(xhr) {
-                            console.error('Error fetching asset tag');
-                        }
-                    });
+
+            // Use jQuery's val() method directly on the select element
+            $('#company_select').on('select2:select', function(e) {
+                var company_id = e.params.data.id;
+                console.log('Company changed to:', company_id);
+
+                // Clear fields first
+                $('#asset_tag').val('');
+                $('.input_fields_wrap input[name^="asset_tags"]').val('');
+
+                // Check if company_id is explicitly null, undefined, or empty string
+                if (!company_id) {
+                    console.log('No company selected, fields cleared');
+                    return;
                 }
+
+                // Show loading state
+                $('#asset_tag').prop('disabled', true);
+
+                console.log('Fetching asset tag for company:', company_id);
+                $.ajax({
+                    url: `/api/assets/tag/${company_id}`,
+                    type: 'GET',
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(data) {
+                        console.log('Received response:', data);
+                        if (data && data.asset_tag) {
+                            // Update the main asset tag field
+                            $('#asset_tag').val(data.asset_tag);
+
+                            // Update any additional asset tag fields
+                            $('.input_fields_wrap input[name^="asset_tags"]').each(function(
+                                index) {
+                                var baseNumber = parseInt(data.asset_tag.replace(/\D/g,
+                                    ''));
+                                var prefix = data.asset_tag.replace(/\d+/, '');
+                                var newValue = prefix + (baseNumber + index + 1);
+                                console.log(
+                                    `Updating field ${index} with value: ${newValue}`
+                                );
+                                $(this).val(newValue);
+                            });
+                        } else {
+                            console.warn('No asset tag received from server');
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching asset tag:', {
+                            status: status,
+                            error: error,
+                            response: xhr.responseText
+                        });
+                        alert('Error fetching asset tag. Please try again.');
+                    },
+                    complete: function() {
+                        $('#asset_tag').prop('disabled', false);
+                    }
+                });
             });
+
+            // Trigger on page load if company is pre-selected
+            var initialCompanyId = $('#company_id').val();
+            if (initialCompanyId) {
+                console.log('Initial company detected:', initialCompanyId);
+                $('#company_id').trigger('change');
+            }
         });
 
         @if (Request::has('model_id'))
@@ -256,7 +307,7 @@
                     success: function(data) {
                         $('#custom_fields_content').html(data);
                         $('#custom_fields_content select')
-                    .select2(); //enable select2 on any custom fields that are select-boxes
+                            .select2(); //enable select2 on any custom fields that are select-boxes
                         //now re-populate the custom fields based on the previously saved values
                         $('#custom_fields_content').find('input,select').each(function(index, elem) {
                             if (transformed_oldvals[elem.name]) {
@@ -265,7 +316,8 @@
                                   if there is no new default custom field value coming from the model --}}
                                 if ({{ $item->id ? 'true' : 'false' }} || $(elem).val() == '') {
                                     $(elem).val(transformed_oldvals[elem.name]).trigger(
-                                    'change'); //the trigger is for select2-based objects, if we have any
+                                        'change'
+                                    ); //the trigger is for select2-based objects, if we have any
                                 }
                             }
 
@@ -298,7 +350,7 @@
                             $("#selected_status_status").addClass('text-success');
                             $("#selected_status_status").html(
                                 '<i class="fas fa-check"></i> {{ trans('admin/hardware/form.asset_deployable') }}'
-                                );
+                            );
 
 
                         } else {
@@ -308,7 +360,7 @@
                             $("#selected_status_status").addClass('text-warning');
                             $("#selected_status_status").html(
                                 '<i class="fas fa-exclamation-triangle"></i> {{ trans('admin/hardware/form.asset_not_deployable') }} '
-                                );
+                            );
                         }
                     }
                 });

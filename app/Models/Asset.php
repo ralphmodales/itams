@@ -787,53 +787,53 @@ class Asset extends Depreciable
      * @return string | false
      */
     public static function autoincrement_asset($company_id = null)
-{
-    $settings = Setting::getSettings();
-    if ($settings->auto_increment_assets == '1') {
-        // Get the correct prefix based on company
-        $prefix = '';
-        if ($company_id) {
-            $company = Company::find($company_id);
-            if ($company && !empty($company->prefix)) {
-                $prefix = $company->prefix;
-            } else {
-                $prefix = $settings->auto_increment_prefix;
-            }
-        } else {
-            $prefix = $settings->auto_increment_prefix;
-        }
-
-        $query = DB::table('assets')
-            ->where('physical', '=', '1');
-            
-        if ($company_id) {
-            $query->where('company_id', '=', $company_id);
-        }
-
-        $highest_asset = $query->get()
-            ->map(function($asset) use ($prefix) {
-                $number = str_replace($prefix, '', $asset->asset_tag);
-                return intval(preg_replace('/^0*/', '', $number));
-            })
-            ->max();
-
-        $next_number = $highest_asset ? $highest_asset + 1 : $settings->next_auto_tag_base;
-
-        if ($settings->zerofill_count > 0) {
-            return $prefix . self::zerofill($next_number, $settings->zerofill_count);
-        }
-        
-        return $prefix . $next_number;
-    }
-    return false;
-}
-
-    public function getAssetTag(Request $request)
     {
-        $company_id = $request->input('company_id');
-        $asset_tag = Asset::autoincrement_asset($company_id);
-        return response()->json(['asset_tag' => $asset_tag]);
+        $settings = Setting::getSettings();
+
+        if ($settings->auto_increment_assets != '1') {
+            return false;
+        }
+
+        try {
+            $prefix = $settings->auto_increment_prefix;
+            if ($company_id) {
+                $company = Company::find($company_id);
+                $prefix = $company && !empty($company->prefix)
+                    ? $company->prefix
+                    : $prefix;
+            }
+
+            $query = DB::table('assets')
+                ->where('physical', '=', '1')
+                ->where('asset_tag', 'LIKE', $prefix . '%');
+
+            if ($company_id) {
+                $query->where('company_id', '=', $company_id);
+            }
+
+            $highest_asset = $query->get()
+                ->map(function ($asset) use ($prefix) {
+                    $tag_without_prefix = str_replace($prefix . '-', '', $asset->asset_tag);
+                    return intval(preg_replace('/^0*/', '', $tag_without_prefix));
+                })
+                ->max();
+
+            $next_number = $highest_asset ? $highest_asset + 1 : 1;
+            
+            return $company_id
+                ? $prefix . '-' . ($settings->zerofill_count > 0
+                    ? self::zerofill($next_number, $settings->zerofill_count)
+                    : $next_number)
+                : ($settings->zerofill_count > 0
+                    ? self::zerofill($next_number, $settings->zerofill_count)
+                    : $next_number);
+
+        } catch (\Exception $e) {
+            return false;
+        }
     }
+
+
 
 
 
