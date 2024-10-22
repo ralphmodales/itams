@@ -642,30 +642,32 @@ class AssetsController extends Controller
         return response()->json(Helper::formatStandardApiResponse('error', null, $asset->getErrors()), 200);
     }
 
-    public function getNextAssetTag($companyId)
+    public function getNextAssetTag($companyId, Request $request)
     {
-        try {
-            if (!$companyId || !Company::find($companyId)) {
-                return response()->json([
-                    'error' => 'Invalid company ID'
-                ], 422);
-            }
-
-            $asset_tag = Asset::autoincrement_asset($companyId);
-
-            if ($asset_tag === false) {
-                return response()->json([
-                    'error' => 'Unable to generate asset tag'
-                ], 422);
-            }
-
-            return response()->json(['asset_tag' => $asset_tag]);
-
-        } catch (\Exception $e) {
-            \Log::error('Error in getNextAssetTag: ' . $e->getMessage());
+    try {
+        if (!$companyId || !Company::find($companyId)) {
             return response()->json([
-                'error' => 'Server error generating asset tag'
-            ], 500);
+                'error' => 'Invalid company ID'
+            ], 422);
+        }
+
+        $current_asset_id = $request->query('current_asset_id');
+        
+        $asset_tag = Asset::autoincrement_asset($companyId, $current_asset_id);
+
+        if ($asset_tag === false) {
+            return response()->json([
+                'error' => 'Unable to generate asset tag'
+            ], 422);
+        }
+
+        return response()->json(['asset_tag' => $asset_tag]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error in getNextAssetTag: ' . $e->getMessage());
+        return response()->json([
+            'error' => 'Server error generating asset tag'
+        ], 500);
         }
     }
 

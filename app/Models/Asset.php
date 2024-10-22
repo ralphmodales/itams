@@ -786,7 +786,7 @@ class Asset extends Depreciable
      * @since [v4.0]
      * @return string | false
      */
-    public static function autoincrement_asset($company_id = null)
+    public static function autoincrement_asset($company_id = null, $current_asset_id = null)
     {
         $settings = Setting::getSettings();
 
@@ -795,6 +795,13 @@ class Asset extends Depreciable
         }
 
         try {
+            if ($current_asset_id) {
+                $current_asset = Asset::find($current_asset_id);
+                if ($current_asset && $current_asset->company_id == $company_id) {
+                    return $current_asset->asset_tag;
+                }
+            }
+
             $prefix = $settings->auto_increment_prefix;
             if ($company_id) {
                 $company = Company::find($company_id);
@@ -806,6 +813,10 @@ class Asset extends Depreciable
             $query = DB::table('assets')
                 ->where('physical', '=', '1')
                 ->where('asset_tag', 'LIKE', $prefix . '%');
+
+            if ($current_asset_id) {
+                $query->where('id', '!=', $current_asset_id);
+            }
 
             if ($company_id) {
                 $query->where('company_id', '=', $company_id);
@@ -819,7 +830,7 @@ class Asset extends Depreciable
                 ->max();
 
             $next_number = $highest_asset ? $highest_asset + 1 : 1;
-            
+
             return $company_id
                 ? $prefix . '-' . ($settings->zerofill_count > 0
                     ? self::zerofill($next_number, $settings->zerofill_count)

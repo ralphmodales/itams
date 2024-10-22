@@ -204,8 +204,11 @@
         $(document).ready(function() {
             console.log('Asset tag handler initialized');
 
+            // Get the asset ID from the URL path
+            var pathParts = window.location.pathname.split('/');
+            var current_asset_id = pathParts.indexOf('hardware') >= 0 ? pathParts[pathParts.indexOf('hardware') +
+                1] : null;
 
-            // Use jQuery's val() method directly on the select element
             $('#company_select').on('select2:select', function(e) {
                 var company_id = e.params.data.id;
                 console.log('Company changed to:', company_id);
@@ -214,7 +217,6 @@
                 $('#asset_tag').val('');
                 $('.input_fields_wrap input[name^="asset_tags"]').val('');
 
-                // Check if company_id is explicitly null, undefined, or empty string
                 if (!company_id) {
                     console.log('No company selected, fields cleared');
                     return;
@@ -223,10 +225,14 @@
                 // Show loading state
                 $('#asset_tag').prop('disabled', true);
 
-                console.log('Fetching asset tag for company:', company_id);
+                console.log('Fetching asset tag for company:', company_id, 'current asset:',
+                    current_asset_id);
                 $.ajax({
                     url: `/api/assets/tag/${company_id}`,
                     type: 'GET',
+                    data: {
+                        current_asset_id: current_asset_id
+                    },
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
