@@ -787,46 +787,46 @@ class Asset extends Depreciable
      * @return string | false
      */
     public static function autoincrement_asset($company_id = null)
-    {
-        $settings = \App\Models\Setting::getSettings();
-
-        if ($settings->auto_increment_assets == '1') {
-            $prefix = '';
-            if ($company_id) {
-                $company = \App\Models\Company::find($company_id);
-                if ($company && !empty($company->asset_prefix)) {
-                    $prefix = $company->asset_prefix;
-                } else {
-                    $prefix = $settings->auto_increment_prefix;
-                }
+{
+    $settings = Setting::getSettings();
+    if ($settings->auto_increment_assets == '1') {
+        // Get the correct prefix based on company
+        $prefix = '';
+        if ($company_id) {
+            $company = Company::find($company_id);
+            if ($company && !empty($company->prefix)) {
+                $prefix = $company->prefix;
             } else {
                 $prefix = $settings->auto_increment_prefix;
             }
-
-            $query = \DB::table('assets')
-                ->where('physical', '=', '1');
-
-            if ($company_id) {
-                $query->where('company_id', '=', $company_id);
-            }
-
-            $temp_asset_tag = $query->max('prefix');
-            $asset_tag_digits = preg_replace('/\D/', '', $temp_asset_tag);
-            $asset_tag = preg_replace('/^0*/', '', $asset_tag_digits);
-
-            if (empty($asset_tag)) {
-                $next_number = $settings->next_auto_tag_base;
-            } else {
-                $next_number = intval($asset_tag) + 1;
-            }
-
-            if ($settings->zerofill_count > 0) {
-                return $prefix . self::zerofill($next_number, $settings->zerofill_count);
-            }
-            return $prefix . $next_number;
+        } else {
+            $prefix = $settings->auto_increment_prefix;
         }
-        return false;
+
+        $query = DB::table('assets')
+            ->where('physical', '=', '1');
+            
+        if ($company_id) {
+            $query->where('company_id', '=', $company_id);
+        }
+
+        $highest_asset = $query->get()
+            ->map(function($asset) use ($prefix) {
+                $number = str_replace($prefix, '', $asset->asset_tag);
+                return intval(preg_replace('/^0*/', '', $number));
+            })
+            ->max();
+
+        $next_number = $highest_asset ? $highest_asset + 1 : $settings->next_auto_tag_base;
+
+        if ($settings->zerofill_count > 0) {
+            return $prefix . self::zerofill($next_number, $settings->zerofill_count);
+        }
+        
+        return $prefix . $next_number;
     }
+    return false;
+}
 
     public function getAssetTag(Request $request)
     {
