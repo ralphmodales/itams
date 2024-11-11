@@ -85,7 +85,7 @@ class AssetsController extends Controller
         $this->authorize('create', Asset::class);
         $view = View::make('hardware/edit')
             ->with('statuslabel_list', Helper::statusLabelList())
-            ->with('item', new Asset())
+            ->with('item', new Asset)
             ->with('statuslabel_types', Helper::statusTypeList());
 
         if ($request->filled('model_id')) {
