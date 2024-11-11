@@ -52,7 +52,7 @@
 
                     <div class="dynamic-form-row">
                         <div class="col-md-3 col-xs-12"><label for="modal-username">{{ trans('admin/users/table.username') }}:</label></div>
-                        <div class="col-md-8 col-xs-12 required"><input type='text' name="username" id='modal-username' class="form-control"></div>
+                        <div class="col-md-8 col-xs-12"><input type='text' name="username" id='modal-username' class="form-control"></div>
                     </div>
 
 					<!-- User email address -->		
@@ -66,14 +66,14 @@
 
                     <div class="dynamic-form-row">
                         <div class="col-md-3 col-xs-12"><label for="modal-password">{{ trans('admin/users/table.password') }}:</label></div>
-                        <div class="col-md-8 col-xs-12 required"><input type='password' name="password" id='modal-password' class="form-control">
+                        <div class="col-md-8 col-xs-12"><input type='password' name="password" id='modal-password' class="form-control">
                             <a href="#" class="left" id="modal-genPassword">Generate</a>
                         </div>
                     </div>
 
                     <div class="dynamic-form-row">
                         <div class="col-md-3 col-xs-12"><label for="modal-password_confirmation">{{ trans('admin/users/table.password_confirm') }}:</label></div>
-                        <div class="col-md-8 col-xs-12 required"><input type='password' name="password_confirmation" id='modal-password_confirmation' class="form-control">
+                        <div class="col-md-8 col-xs-12"><input type='password' name="password_confirmation" id='modal-password_confirmation' class="form-control">
                             <div id="modal-generated-password"></div>
                         </div>
                     </div>

@@ -40,17 +40,23 @@ class SaveUserRequest extends FormRequest
             // Brand new user
             case 'POST':
                 $rules['first_name'] = 'required|string|min:1';
-                $rules['username'] = 'required_unless:ldap_import,1|string|min:1';
-                if ($this->request->get('ldap_import') == false) {
-                    $rules['password'] = Setting::passwordComplexityRulesSaving('store').'|confirmed';
+                $rules['username'] = 'nullable|string';
+
+
+                if ($this->request->get('username') === null) {
+                    $rules['password'] = 'nullable';
+                } else {
+                    $rules['password'] = Setting::passwordComplexityRulesSaving('store') . '|confirmed';
                 }
+
+
                 break;
 
             // Save all fields
             case 'PUT':
                 $rules['first_name'] = 'required|string|min:1';
-                $rules['username'] = 'required_unless:ldap_import,1|string|min:1';
-                $rules['password'] = Setting::passwordComplexityRulesSaving('update').'|confirmed';
+                $rules['username'] = 'string|min:1';
+                $rules['password'] = Setting::passwordComplexityRulesSaving('update') . '|confirmed';
                 break;
 
             // Save only what's passed

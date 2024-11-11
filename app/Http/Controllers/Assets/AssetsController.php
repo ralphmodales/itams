@@ -85,7 +85,7 @@ class AssetsController extends Controller
         $this->authorize('create', Asset::class);
         $view = View::make('hardware/edit')
             ->with('statuslabel_list', Helper::statusLabelList())
-            ->with('item', new Asset)
+            ->with('item', new Asset())
             ->with('statuslabel_types', Helper::statusTypeList());
 
         if ($request->filled('model_id')) {
@@ -205,7 +205,7 @@ class AssetsController extends Controller
                 }
 
                 $success = true;
-                
+
             }
         }
 
@@ -216,18 +216,19 @@ class AssetsController extends Controller
             // Cookie::queue(Cookie::make('optional_info', json_decode($_POST['options']), $minutes));
             return redirect()->route('hardware.index')
                 ->with('success', trans('admin/hardware/message.create.success'));
-               
-      
+
+
         }
 
         return redirect()->back()->withInput()->withErrors($asset->getErrors());
     }
 
-    public function getOptionCookie(Request $request){
+    public function getOptionCookie(Request $request)
+    {
         $value = $request->cookie('optional_info');
         echo $value;
         return $value;
-     }
+    }
 
     /**
      * Returns a view that presents a form to edit an existing asset.
@@ -327,7 +328,7 @@ class AssetsController extends Controller
 
         $status = Statuslabel::find($asset->status_id);
 
-        if($status->archived){
+        if ($status->archived) {
             $asset->assigned_to = null;
         }
 
@@ -437,7 +438,7 @@ class AssetsController extends Controller
      */
     public function getAssetBySerial(Request $request)
     {
-        $topsearch = ($request->get('topsearch')=="true");
+        $topsearch = ($request->get('topsearch') == "true");
 
         if (!$asset = Asset::where('serial', '=', $request->get('serial'))->first()) {
             return redirect()->route('hardware.index')->with('error', trans('admin/hardware/message.does_not_exist'));
@@ -638,7 +639,7 @@ class AssetsController extends Controller
             $results = $csv->getRecords();
         } catch (\Exception $e) {
             return back()->with('error', trans('general.error_in_import_file', ['error' => $e->getMessage()]));
-        } 
+        }
         $item = [];
         $status = [];
         $status['error'] = [];
